@@ -25,7 +25,7 @@ fn main() {
     print_layers(&layers);
 
     // モデルを作成してビルド
-    let mut model = create_model(layers);
+    let mut model: Model = create_model(layers);
     model.build();
     println!("model built");
 }
