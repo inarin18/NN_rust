@@ -9,7 +9,13 @@ pub struct Layer {
 
 impl Layer {
     pub fn new(name: String, i_size: usize, o_size: usize) -> Self {
-        Self{name, w: Vec::new(), b: Vec::new(), i_size, o_size}
+        Self{name, w: vec![0.0; i_size * o_size], b: vec![0.0; o_size], i_size, o_size}
+    }
+
+    // useless? 
+    pub fn build(&mut self) {
+        self.w = vec![0.0; self.i_size * self.o_size];
+        self.b = vec![0.0; self.o_size];
     }
 }
 
@@ -20,4 +26,16 @@ pub fn create_layers(layer_sizes: Vec<usize>) -> Vec<Layer> {
         layers.push(layer);
     }
     layers
+}
+
+pub fn print_layers(layers: &Vec<Layer>) {
+    for layer in layers {
+        println!("-----------------------------");
+        println!(" Layer Name = {}", layer.name);
+        println!("     Input Size      : {}", layer.i_size);
+        println!("     Output Size     : {}", layer.o_size);
+        println!("     Weights Length  : {}", layer.w.len());
+        println!("     Biases Length   : {}", layer.b.len());
+    }
+    println!("-----------------------------");
 }
