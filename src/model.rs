@@ -1,11 +1,11 @@
-use crate::layer::Layer;
+use crate::layers::base_layer::AbstractLayerTrait;
 
 pub struct Model {
-    pub layers: Vec<Layer>,
+    pub layers: Vec<Box<dyn AbstractLayerTrait>>,
 }
 
 impl Model {
-    pub fn new(layers: Vec<Layer>) -> Self {
+    pub fn new(layers: Vec<Box<dyn AbstractLayerTrait>>) -> Self {
         Self { layers }
     }
 
@@ -25,6 +25,6 @@ impl Model {
 }
 
 // instance method but not need to use?
-pub fn create_model(layers: Vec<Layer>) -> Model {
+pub fn create_model(layers: Vec<Box<dyn AbstractLayerTrait>>) -> Model {
     Model::new(layers)
 }

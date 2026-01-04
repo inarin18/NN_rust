@@ -1,9 +1,10 @@
-mod layer;
+mod layers;
 mod model;
+mod activation;
 
-use layer::Layer;
-use layer::create_layers;
-use layer::print_layers;
+use layers::base_layer::AbstractLayerTrait;
+use layers::utils::create_layers;
+use layers::utils::print_layers;
 
 use model::Model;
 use model::create_model;
@@ -19,7 +20,8 @@ fn main() {
     println!("(HEIGHT, WIDTH) = ({}, {})", height, width);
 
     // レイヤーをまとめる配列
-    let layers: Vec<Layer> = create_layers(vec![height * width, 1024, 1024, 10]);
+    let use_softmax: bool = true;
+    let layers: Vec<Box<dyn AbstractLayerTrait>> = create_layers(vec![height * width, 1024, 1024, 10], use_softmax);
     
     // & を付けることで layers の所有権を借用できる
     print_layers(&layers);
