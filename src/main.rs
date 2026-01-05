@@ -55,6 +55,9 @@ fn main() {
 
     // データを読み込む
     let data: MnistData = MnistData::load_from_binary("data/mnist.bin").unwrap();
-    println!("data: {:?}", data.get_image(0));
-    println!("data: {:?}", data.get_label(0));
+    println!("data: {:?}", data.get_image(0).unwrap().len());
+    println!("data: {:?}", data.get_label(0).unwrap());
+
+    // アスキーアートで画像を表示
+    data.display_image(0);
 }
