@@ -1,27 +1,17 @@
 use crate::activation::{relu, sigmoid, identity};
-use crate::layers::base_layer::AbstractLayerTrait;
+use crate::layers::base_layer::{AbstractLayer, AbstractLayerTrait};
 
 
 #[derive(Debug)]
 pub struct FcLayer {
-    pub name: String,
-    pub w: Vec<f32>,
-    pub b: Vec<f32>,
-    pub i_size: usize,
-    pub o_size: usize,
-    pub activation_type: String,
+    base: AbstractLayer,
     pub activation_fn: fn(f32) -> f32,
 }
 
 impl FcLayer {
-    pub fn new(name: String, i_size: usize, o_size: usize) -> Self {
+    pub fn new(name: String, i_size: usize, o_size: usize, activation_type: String) -> Self {
         Self { 
-            name, 
-            w: vec![0.0; i_size * o_size], 
-            b: vec![0.0; o_size], 
-            i_size, 
-            o_size, 
-            activation_type: "identity".to_string(), 
+            base: AbstractLayer::new(name, i_size, o_size, activation_type),
             activation_fn: identity,
         }
     }
@@ -29,9 +19,9 @@ impl FcLayer {
 
 impl AbstractLayerTrait for FcLayer {
     fn build(&mut self) {
-        self.w = vec![0.0; self.i_size * self.o_size];
-        self.b = vec![0.0; self.o_size];
-        match self.activation_type.as_str() {
+        self.base.w = vec![0.0; self.base.i_size * self.base.o_size];
+        self.base.b = vec![0.0; self.base.o_size];
+        match self.base.activation_type.as_str() {
             "relu" => self.activation_fn = relu,
             "sigmoid" => self.activation_fn = sigmoid,
             _ => self.activation_fn = identity,
@@ -44,26 +34,26 @@ impl AbstractLayerTrait for FcLayer {
     }
 
     fn name(&self) -> &str {
-        &self.name
+        &self.base.name
     }
 
     fn i_size(&self) -> usize {
-        self.i_size
+        self.base.i_size
     }
 
     fn o_size(&self) -> usize {
-        self.o_size
+        self.base.o_size
     }
 
     fn w(&self) -> &Vec<f32> {
-        &self.w
+        &self.base.w
     }
 
     fn b(&self) -> &Vec<f32> {
-        &self.b
+        &self.base.b
     }
 
     fn activation_type(&self) -> &str {
-        &self.activation_type
+        &self.base.activation_type
     }
 }

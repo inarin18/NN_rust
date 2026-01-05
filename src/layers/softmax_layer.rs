@@ -1,24 +1,14 @@
-use crate::layers::base_layer::AbstractLayerTrait;
+use crate::layers::base_layer::{AbstractLayer, AbstractLayerTrait};
 
 #[derive(Debug)]
 pub struct SoftmaxLayer {
-    pub name: String,
-    pub w: Vec<f32>,
-    pub b: Vec<f32>,
-    pub i_size: usize,
-    pub o_size: usize,
-    pub activation_type: String,
+    base: AbstractLayer,
 }
 
 impl SoftmaxLayer {
     pub fn new(name: String, i_size: usize, o_size: usize) -> Self {
         Self {
-            name, 
-            w: vec![0.0; i_size * o_size],
-            b: vec![0.0; o_size],
-            i_size, 
-            o_size, 
-            activation_type: "softmax".to_string(), 
+            base: AbstractLayer::new(name, i_size, o_size, "softmax".to_string()),
         }
     }
 }
@@ -32,26 +22,26 @@ impl AbstractLayerTrait for SoftmaxLayer {
     }
 
     fn name(&self) -> &str {
-        &self.name
+        &self.base.name
     }
 
     fn i_size(&self) -> usize {
-        self.i_size
+        self.base.i_size
     }
 
     fn o_size(&self) -> usize {
-        self.o_size
+        self.base.o_size
     }
 
     fn w(&self) -> &Vec<f32> {
-        &self.w
+        &self.base.w
     }
 
     fn b(&self) -> &Vec<f32> {
-        &self.b
+        &self.base.b
     }
 
     fn activation_type(&self) -> &str {
-        &self.activation_type
+        &self.base.activation_type
     }
 }
