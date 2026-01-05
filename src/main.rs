@@ -21,7 +21,11 @@ fn main() {
 
     // レイヤーをまとめる配列
     let use_softmax: bool = true;
-    let layers: Vec<Box<dyn AbstractLayerTrait>> = create_layers(vec![height * width, 1024, 1024, 10], use_softmax);
+    let layers: Vec<Box<dyn AbstractLayerTrait>> = create_layers(
+        vec![height * width, 1024, 1024, 10], 
+        "relu".to_string(), 
+        use_softmax
+    );
     
     // & を付けることで layers の所有権を借用できる
     print_layers(&layers);

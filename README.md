@@ -23,3 +23,9 @@ This is a simple neural network implementation in Rust.
 - Add more testing
 - Add more documentation
 - Add more examples
+
+## Memo
+
+trait はあくまでも共通の fn のシグネチャを定義するためのモノであり，実装はそれぞれの型によって行われる。
+
+また，impl はあくまで struct に対して実装を行うためのモノであり，必ずしも trait を継承しなくてよい．

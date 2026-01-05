@@ -3,10 +3,10 @@ use crate::layers::fc_layer::FcLayer;
 use crate::layers::softmax_layer::SoftmaxLayer;
 use crate::layers::base_layer::AbstractLayerTrait;
 
-pub fn create_layers(layer_sizes: Vec<usize>, use_softmax: bool) -> Vec<Box<dyn AbstractLayerTrait>> {
+pub fn create_layers(layer_sizes: Vec<usize>, activation_type: String, use_softmax: bool) -> Vec<Box<dyn AbstractLayerTrait>> {
     let mut layers: Vec<Box<dyn AbstractLayerTrait>> = Vec::new();
     for i in 0..layer_sizes.len() - 1 {
-        let layer = Box::new(FcLayer::new(format!("layer_{}", i), layer_sizes[i], layer_sizes[i+1]));
+        let layer = Box::new(FcLayer::new(format!("layer_{}", i), layer_sizes[i], layer_sizes[i+1], activation_type.clone()));
         layers.push(layer);
     }
     if use_softmax {
@@ -27,6 +27,8 @@ pub fn print_layers(layers: &[Box<dyn AbstractLayerTrait>]) {
             println!("     Weights Length  : {}", layer.w().len());
             println!("     Biases Length   : {}", layer.b().len());
         }
+
+        println!("     Activation Type : {}", layer.activation_type());
     }
     println!("-----------------------------");
 }
