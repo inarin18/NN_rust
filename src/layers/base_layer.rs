@@ -9,6 +9,7 @@ pub trait AbstractLayerTrait {
     fn build(&mut self);
 }
 
+#[derive(Debug)]
 pub struct AbstractLayer {
     pub name: String,
     pub w: Vec<f32>,
@@ -19,32 +20,14 @@ pub struct AbstractLayer {
 }
 
 impl AbstractLayer {
-    pub fn new(name: String, i_size: usize, o_size: usize) -> Self {
-        Self { name, w: vec![0.0; i_size * o_size], b: vec![0.0; o_size], i_size, o_size, activation_type: "identity".to_string() }
-    }
-
-    // getter methods
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn w(&self) -> &Vec<f32> {
-        &self.w
-    }
-
-    pub fn b(&self) -> &Vec<f32> {
-        &self.b
-    }
-
-    pub fn i_size(&self) -> usize {
-        self.i_size
-    }
-
-    pub fn o_size(&self) -> usize {
-        self.o_size
-    }
-
-    pub fn activation_type(&self) -> &str {
-        &self.activation_type
+    pub fn new(name: String, i_size: usize, o_size: usize, activation_type: String) -> Self {
+        Self {
+            name,
+            w: vec![0.0; i_size * o_size],
+            b: vec![0.0; o_size],
+            i_size,
+            o_size,
+            activation_type,
+        }
     }
 }
