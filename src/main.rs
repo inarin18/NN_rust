@@ -3,7 +3,6 @@ mod model;
 mod activation;
 
 use rand::Rng;
-use rand_distr::{Distribution, Normal};
 
 use layers::base_layer::AbstractLayerTrait;
 use layers::utils::create_layers;
