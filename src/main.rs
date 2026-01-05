@@ -2,6 +2,9 @@ mod layers;
 mod model;
 mod activation;
 
+use rand::Rng;
+use rand_distr::{Distribution, Normal};
+
 use layers::base_layer::AbstractLayerTrait;
 use layers::utils::create_layers;
 use layers::utils::print_layers;
@@ -11,7 +14,6 @@ use model::create_model;
 
 fn main() {
 
-    let seed: u64 = 42;
     println!("Start Program");
     
     // MNIST の画像サイズ
@@ -34,4 +36,18 @@ fn main() {
     let mut model: Model = create_model(layers);
     model.build();
     println!("model built");
+
+    // ランダムな入力を生成
+    let mut rng = rand::thread_rng();
+    let input: Vec<f32> = (0..height * width)
+        .map(|_| rng.gen_range(0..=255) as f32)
+        .collect::<Vec<f32>>()
+        .iter()
+        .map(|x| x / 255.0)
+        .collect();
+    println!("input: {:?}", &input[..10]);
+
+    // モデルを forward する
+    let output: Vec<f32> = model.forward(&input.clone());
+    println!("output: {:?}", &output);
 }

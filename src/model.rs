@@ -15,13 +15,13 @@ impl Model {
         }
     }
 
-    // pub fn forward(&self, x: &Vec<f32>) -> Vec<f32> {
-    //     let mut y = x.clone();
-    //     for layer in &self.layers {
-    //         y = layer.forward(y);
-    //     }
-    //     y
-    // }
+    pub fn forward(&self, x: &Vec<f32>) -> Vec<f32> {
+        let mut y: Vec<f32> = x.clone();
+        for layer in &self.layers {
+            y = layer.forward(&y);
+        }
+        y
+    }
 }
 
 // instance method but not need to use?
