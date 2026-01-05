@@ -16,12 +16,13 @@ use data::MnistData;
 
 fn main() {
 
-    println!("Start Program");
+    println!("┌──────────────────────────────┐");
+    println!("│ Start Program                │");
+    println!("└──────────────────────────────┘");
     
     // MNIST の画像サイズ
     let height: usize = 28;
     let width: usize = 28;
-    println!("(HEIGHT, WIDTH) = ({}, {})", height, width);
 
     // レイヤーをまとめる配列
     let use_softmax: bool = true;
@@ -37,24 +38,11 @@ fn main() {
     // モデルを作成してビルド
     let mut model: Model = create_model(layers);
     model.build();
-    println!("model built");
-
-    // ランダムな入力を生成
-    let mut rng = rand::thread_rng();
-    let input: Vec<f32> = (0..height * width)
-        .map(|_| rng.gen_range(0..=255) as f32)
-        .map(|x| x / 255.0)
-        .collect();
-    println!("input: {:?}", &input[..10]);
-
-    // モデルを forward する
-    let output: Vec<f32> = model.forward(&input.clone());
-    println!("output: {:?}", &output);
 
     // データを読み込む
     let data: MnistData = MnistData::load_from_binary("data/mnist.bin").unwrap();
-    println!("data: {:?}", data.get_image(0).unwrap().len());
-    println!("data: {:?}", data.get_label(0).unwrap());
+    println!("data: {:?}", data.get_image(0).expect("Failed to get image").len());
+    println!("data: {:?}", data.get_label(0).expect("Failed to get label"));
 
     // アスキーアートで画像を表示
     data.display_image(0);
