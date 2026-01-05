@@ -1,4 +1,5 @@
 use crate::layers::base_layer::{AbstractLayer, AbstractLayerTrait};
+use crate::activation::softmax;
 
 #[derive(Debug)]
 pub struct SoftmaxLayer {
@@ -17,8 +18,7 @@ impl AbstractLayerTrait for SoftmaxLayer {
     fn build(&mut self) {}
 
     fn forward(&self, x: &[f32]) -> Vec<f32> {
-        // pass
-        x.to_vec()
+        softmax(x)
     }
 
     fn name(&self) -> &str {
