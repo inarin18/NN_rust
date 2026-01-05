@@ -17,7 +17,7 @@ This is a simple neural network implementation in Rust.
   - [x] Add forward path
   - [ ] Add loss function
   - [ ] Add optimization algorithm
-  - [ ] Add data loading method
+  - [x] Add data loading method
   - [ ] Add evaluation metric
   - [ ] Add visualization method
   - [ ] Add logging
