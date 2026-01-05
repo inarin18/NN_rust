@@ -12,17 +12,18 @@ This is a simple neural network implementation in Rust.
 
 ## TODO
 
-- Add more layers
-- Add more activation functions
-- Add more loss functions
-- Add more optimization algorithms
-- Add more data loading methods
-- Add more evaluation metrics
-- Add more visualization methods
-- Add more logging
-- Add more testing
-- Add more documentation
-- Add more examples
+  - [x] Add some layers
+  - [x] Add some activation functions
+  - [x] Add forward path
+  - [ ] Add loss function
+  - [ ] Add optimization algorithm
+  - [ ] Add data loading method
+  - [ ] Add evaluation metric
+  - [ ] Add visualization method
+  - [ ] Add logging
+  - [ ] Add testing
+  - [ ] Add documentation
+  - [ ] Add examples
 
 ## Memo
 
