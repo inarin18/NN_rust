@@ -1,6 +1,7 @@
 mod layers;
 mod model;
 mod activation;
+mod data;
 
 use rand::Rng;
 
@@ -10,6 +11,8 @@ use layers::utils::print_layers;
 
 use model::Model;
 use model::create_model;
+
+use data::MnistData;
 
 fn main() {
 
@@ -49,4 +52,9 @@ fn main() {
     // モデルを forward する
     let output: Vec<f32> = model.forward(&input.clone());
     println!("output: {:?}", &output);
+
+    // データを読み込む
+    let data: MnistData = MnistData::load_from_binary("data/mnist.bin").unwrap();
+    println!("data: {:?}", data.get_image(0));
+    println!("data: {:?}", data.get_label(0));
 }
