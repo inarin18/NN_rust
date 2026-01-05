@@ -43,8 +43,6 @@ fn main() {
     let mut rng = rand::thread_rng();
     let input: Vec<f32> = (0..height * width)
         .map(|_| rng.gen_range(0..=255) as f32)
-        .collect::<Vec<f32>>()
-        .iter()
         .map(|x| x / 255.0)
         .collect();
     println!("input: {:?}", &input[..10]);
