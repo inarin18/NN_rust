@@ -1,5 +1,6 @@
 use crate::activation::{relu, sigmoid, identity};
 use crate::layers::base_layer::{AbstractLayer, AbstractLayerTrait};
+use rand_distr::{Distribution, Normal};
 
 
 #[derive(Debug)]
@@ -19,8 +20,22 @@ impl FcLayer {
 
 impl AbstractLayerTrait for FcLayer {
     fn build(&mut self) {
-        self.base.w = vec![0.0; self.base.i_size * self.base.o_size];
-        self.base.b = vec![0.0; self.base.o_size];
+
+        // parameters for weight initialization
+        let mu: f64 = 0.0;
+        let sigma: f64 = 0.01;
+
+        // initialize weights and biases
+        let mut rng = rand::thread_rng();
+        let normal = Normal::new(mu, sigma).unwrap();
+        for i in 0..self.base.i_size * self.base.o_size {
+            self.base.w[i] = normal.sample(&mut rng) as f32;
+        }
+        for i in 0..self.base.o_size {
+            self.base.b[i] = normal.sample(&mut rng) as f32;
+        }
+
+        // set activation function
         match self.base.activation_type.as_str() {
             "relu" => self.activation_fn = relu,
             "sigmoid" => self.activation_fn = sigmoid,
@@ -29,8 +44,24 @@ impl AbstractLayerTrait for FcLayer {
     }
 
     fn forward(&self, x: &[f32]) -> Vec<f32> {
-        // pass
-        x.to_vec()
+        let mut out = Vec::with_capacity(self.base.o_size);
+        
+        // calculate output for each neuron
+        for j in 0..self.base.o_size {
+            let weight_row_start = j * self.base.i_size;
+            let weight_row = &self.base.w[weight_row_start..weight_row_start + self.base.i_size];
+            
+            // calculate dot product of input and weight
+            let dot_product: f32 = x.iter()
+                .zip(weight_row.iter())
+                .map(|(x_i, w_ij)| x_i * w_ij)
+                .sum();
+
+            let activation: f32 = (self.activation_fn)(dot_product + self.base.b[j]);
+            out.push(activation);
+        }
+
+        out
     }
 
     fn name(&self) -> &str {
