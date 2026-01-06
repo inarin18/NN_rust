@@ -3,8 +3,7 @@ mod model;
 mod activation;
 mod data;
 mod losses;
-
-use rand::Rng;
+mod optimizers;
 
 use layers::base_layer::AbstractLayerTrait;
 use layers::utils::create_layers;
@@ -17,6 +16,9 @@ use data::MnistData;
 
 use losses::base_loss::AbstractLossFunctionTrait;
 use losses::cross_entropy_loss::CrossEntropyLoss;
+
+use optimizers::base_optimizer::AbstractOptimizerTrait;
+use optimizers::sgd::{Sgd, SgdParams};
 
 fn main() {
 
@@ -73,4 +75,15 @@ fn main() {
 
     // モデルを backward する（勾配を計算して保存しただけ）
     model.backward(&loss_grad);
+
+    // オプティマイザーを作成
+    let mut optimizer: Sgd = Sgd::new("sgd".to_string());
+    optimizer.build(
+        SgdParams::new()
+        .learning_rate(0.01)
+        .verbose(true)
+    );
+
+    // オプティマイザーを update する
+    optimizer.update(&mut model);
 }
