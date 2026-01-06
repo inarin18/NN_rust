@@ -2,14 +2,20 @@
 use std::fs::File;
 use std::io::{BufReader, Read};
 
-pub struct MnistData {
+pub struct DataSet {
     pub images: Vec<f32>,  // フラットな配列
     pub labels: Vec<u8>,
     pub num_samples: usize,
     pub num_features: usize,
 }
 
-impl MnistData {
+impl DataSet {
+
+    pub fn new(images: Vec<f32>, labels: Vec<u8>, num_features: usize) -> Self {
+        let num_samples = images.len() / num_features as usize;
+        Self { images, labels, num_samples, num_features }
+    }
+
     pub fn load_from_binary(filename: &str) -> std::io::Result<Self> {
         let mut file = BufReader::new(File::open(filename)?);
         
@@ -41,7 +47,7 @@ impl MnistData {
         let mut labels = vec![0u8; num_samples];
         file.read_exact(&mut labels)?;
         
-        Ok(MnistData {
+        Ok(DataSet {
             images,
             labels,
             num_samples,
@@ -61,6 +67,17 @@ impl MnistData {
     
     pub fn get_label(&self, index: usize) -> Option<u8> {
         self.labels.get(index).copied()
+    }
+
+    pub fn split_dataset(&self, ratio: f32) -> (DataSet, DataSet) {
+        let num_samples = self.num_samples;
+        let num_train_samples = (num_samples as f32 * ratio) as usize;
+        let (train_images, test_images) = self.images.split_at(num_train_samples * self.num_features);
+        let (train_labels, test_labels) = self.labels.split_at(num_train_samples);
+        (
+            DataSet::new(train_images.to_vec(), train_labels.to_vec(), self.num_features), 
+            DataSet::new(test_images.to_vec(), test_labels.to_vec(), self.num_features)
+        )
     }
     
     /// 画像データをアスキーアートとして表示する
