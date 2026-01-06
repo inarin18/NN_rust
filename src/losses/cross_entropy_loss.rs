@@ -1,3 +1,5 @@
+use crate::losses::base_loss::{AbstractLossFunction, AbstractLossFunctionTrait};
+
 pub struct CrossEntropyLoss {
     base: AbstractLossFunction,
 }
