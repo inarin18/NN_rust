@@ -43,8 +43,12 @@ impl AbstractLayerTrait for FcLayer {
         }
     }
 
-    fn forward(&self, x: &[f32]) -> Vec<f32> {
-        let mut out = Vec::with_capacity(self.base.o_size);
+    fn forward(&mut self, x: &[f32]) -> Vec<f32> {
+
+        self.base.last_input = x.to_vec();
+        
+        let mut pre_activation = Vec::with_capacity(self.base.o_size);
+        let mut post_activation = Vec::with_capacity(self.base.o_size);
         
         // calculate output for each neuron
         for j in 0..self.base.o_size {
@@ -57,11 +61,60 @@ impl AbstractLayerTrait for FcLayer {
                 .map(|(x_i, w_ij)| x_i * w_ij)
                 .sum();
 
-            let activation: f32 = (self.activation_fn)(dot_product + self.base.b[j]);
-            out.push(activation);
+            let z = dot_product + self.base.b[j];
+            pre_activation.push(z);
+
+            let activation: f32 = (self.activation_fn)(z);
+            post_activation.push(activation);
         }
 
-        out
+        self.base.last_output = post_activation.clone();
+        post_activation
+    }
+
+    fn backward(&mut self, grad_output: &[f32]) -> Vec<f32> {
+
+        // 活性化関数の勾配を計算
+        let grad_activation: Vec<f32> = self.base.last_output.iter()
+            .zip(grad_output.iter())
+            .map(|(z, grad)| {
+                match self.base.activation_type.as_str() {
+                    "relu" => if *z > 0.0 { *grad } else { 0.0 },
+                    "sigmoid" => {
+                        let s = sigmoid(*z);
+                        *grad * s * (1.0 - s)
+                    },
+                    _ => *grad,  // identity
+                }
+            })
+            .collect();
+        
+        // 重みとバイアスの勾配用の配列を初期化
+        self.base.grad_w = vec![0.0; self.base.i_size * self.base.o_size];
+        self.base.grad_b = vec![0.0; self.base.o_size];
+        
+        for j in 0..self.base.o_size {
+            // バイアスの勾配
+            self.base.grad_b[j] = grad_activation[j];
+            
+            // 重みの勾配
+            let weight_row_start = j * self.base.i_size;
+            for i in 0..self.base.i_size {
+                self.base.grad_w[weight_row_start + i] = 
+                    grad_activation[j] * self.base.last_input[i];
+            }
+        }
+        
+        // 入力に対する勾配を計算（前のレイヤーに伝播）
+        let mut grad_input = vec![0.0; self.base.i_size];
+        for j in 0..self.base.o_size {
+            let weight_row_start = j * self.base.i_size;
+            for i in 0..self.base.i_size {
+                grad_input[i] += grad_activation[j] * self.base.w[weight_row_start + i];
+            }
+        }
+        
+        grad_input
     }
 
     fn name(&self) -> &str {

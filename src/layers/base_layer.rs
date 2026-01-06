@@ -1,5 +1,6 @@
 pub trait AbstractLayerTrait {
-    fn forward(&self, x: &[f32]) -> Vec<f32>;
+    fn forward(&mut self, x: &[f32]) -> Vec<f32>;
+    fn backward(&mut self, grad_output: &[f32]) -> Vec<f32>;
     fn name(&self) -> &str;
     fn i_size(&self) -> usize;
     fn o_size(&self) -> usize;
@@ -17,6 +18,10 @@ pub struct AbstractLayer {
     pub i_size: usize,
     pub o_size: usize,
     pub activation_type: String,
+    pub last_input: Vec<f32>,
+    pub last_output: Vec<f32>,
+    pub grad_w: Vec<f32>,
+    pub grad_b: Vec<f32>,
 }
 
 impl AbstractLayer {
@@ -28,6 +33,10 @@ impl AbstractLayer {
             i_size,
             o_size,
             activation_type,
+            last_input: vec![0.0; i_size],
+            last_output: vec![0.0; o_size],
+            grad_w: vec![0.0; i_size * o_size],
+            grad_b: vec![0.0; o_size],
         }
     }
 }

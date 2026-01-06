@@ -17,8 +17,41 @@ impl SoftmaxLayer {
 impl AbstractLayerTrait for SoftmaxLayer {
     fn build(&mut self) {}
 
-    fn forward(&self, x: &[f32]) -> Vec<f32> {
-        softmax(x)
+    fn forward(&mut self, x: &[f32]) -> Vec<f32> {
+        // 入力を保存
+        self.base.last_input = x.to_vec();
+        
+        // softmax を計算
+        let output = softmax(x);
+        
+        // 出力を保存（backward で使用）
+        self.base.last_output = output.clone();
+        output
+    }
+
+    fn backward(&mut self, grad_output: &[f32]) -> Vec<f32> {
+        // softmax の出力（forward で保存したもの）
+        let s = &self.base.last_output;
+        
+        // softmax の勾配: ∂s_i / ∂x_j = s_i * (δ_ij - s_j)
+        // チェインルール: ∂L / ∂x_j = Σ_i (∂L / ∂s_i) * (∂s_i / ∂x_j)
+        //                = s_j * (grad_output[j] - Σ_i grad_output[i] * s_i)
+        
+        // Σ_i grad_output[i] * s_i を計算
+        let sum_grad_s: f32 = grad_output.iter()
+            .zip(s.iter())
+            .map(|(g, s_i)| g * s_i)
+            .sum();
+        
+        // 各入力に対する勾配を計算
+        let grad_input: Vec<f32> = s.iter()
+            .zip(grad_output.iter())
+            .map(|(s_j, grad_j)| {
+                s_j * (grad_j - sum_grad_s)
+            })
+            .collect();
+        
+        grad_input
     }
 
     fn name(&self) -> &str {
