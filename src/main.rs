@@ -84,6 +84,17 @@ fn main() {
         .verbose(true)
     );
 
-    // オプティマイザーを update する
+    let weights_before: Vec<f32> = model.layers[1].w().clone();
+
+    // オプティマイザーを update することでモデルのパラメータを更新
     optimizer.update(&mut model);
+
+    // 更新できたか比較して確認
+    let weights_after: Vec<f32> = model.layers[1].w().clone();
+    let weight_diff: f32 = weights_before.iter()
+        .zip(weights_after.iter())
+        .map(|(b, a)| a - b)
+        .sum::<f32>()
+        .abs();
+    println!("weight difference: {:?}", weight_diff);
 }
