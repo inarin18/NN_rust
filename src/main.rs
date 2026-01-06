@@ -13,7 +13,7 @@ use layers::utils::print_layers;
 use model::Model;
 use model::create_model;
 
-use data::MnistData;
+use data::DataSet;
 
 use losses::base_loss::AbstractLossFunctionTrait;
 use losses::cross_entropy_loss::CrossEntropyLoss;
@@ -49,7 +49,7 @@ fn main() {
     model.build();
 
     // データを読み込む
-    let mnist_data: MnistData = MnistData::load_from_binary("data/mnist.bin").unwrap();
+    let mnist_data: DataSet = DataSet::load_from_binary("data/mnist.bin").unwrap();
     println!("data: {:?}", mnist_data.get_image(0).expect("Failed to get image").len());
     println!("data: {:?}", mnist_data.get_label(0).expect("Failed to get label"));
 
@@ -102,11 +102,13 @@ fn main() {
     println!("weight difference: {:?}", weight_diff);
 
     // Trainer を作成
+    let (train_dataset, test_dataset) = mnist_data.split_dataset(0.01);
     let mut trainer: Trainer<Sgd, CrossEntropyLoss> = Trainer::new(
         model,
         optimizer,
         loss_function,
-        mnist_data,
+        train_dataset,
+        test_dataset,
         10,
         true
     );
