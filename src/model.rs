@@ -15,12 +15,21 @@ impl Model {
         }
     }
 
-    pub fn forward(&self, x: &Vec<f32>) -> Vec<f32> {
+    pub fn forward(&mut self, x: &Vec<f32>) -> Vec<f32> {
         let mut y: Vec<f32> = x.clone();
-        for layer in &self.layers {
+        for layer in &mut self.layers {
             y = layer.forward(&y);
         }
         y
+    }
+
+    pub fn backward(&mut self, loss_grad: &[f32]) {
+        let mut grad = loss_grad.to_vec();
+        
+        // レイヤーを逆順に処理
+        for layer in self.layers.iter_mut().rev() {
+            grad = layer.backward(&grad);
+        }
     }
 }
 
