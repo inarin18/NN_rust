@@ -18,7 +18,9 @@ This is a simple neural network implementation in Rust.
   - [x] Add loss function
   - [x] Add optimization algorithm
   - [x] Add data loading method
-  - [ ] Add Trainer
+  - [x] Add Trainer
+  - [ ] Add Batch Trainer
+  - [ ] Modify Trainer to use Batch Trainer
   - [ ] Add evaluation metric
   - [ ] Add visualization method
   - [ ] Add logging
