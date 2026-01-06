@@ -2,6 +2,7 @@ mod layers;
 mod model;
 mod activation;
 mod data;
+mod losses;
 
 use rand::Rng;
 
@@ -13,6 +14,9 @@ use model::Model;
 use model::create_model;
 
 use data::MnistData;
+
+use losses::base_loss::AbstractLossFunctionTrait;
+use losses::cross_entropy_loss::CrossEntropyLoss;
 
 fn main() {
 
@@ -46,4 +50,27 @@ fn main() {
 
     // アスキーアートで画像を表示
     data.display_image(0);
+
+    // 損失関数を作成
+    let mut loss_function: CrossEntropyLoss = CrossEntropyLoss::new("cross_entropy_loss".to_string());
+
+    let index: usize = 0;
+    let input: Vec<f32> = data.get_image(index).expect("Failed to get image").to_vec();
+    let label: u8 = data.get_label(index).expect("Failed to get label");
+    let mut true_labels = vec![0.0; 10];
+    true_labels[label as usize] = 1.0;
+    
+    // モデルを forward する
+    let output: Vec<f32> = model.forward(&input);
+
+    // 損失関数を forward する
+    let loss: f32 = loss_function.forward(&true_labels, &output);
+    println!("loss: {:?}", loss);
+
+    // 損失関数を backward する
+    let loss_grad: Vec<f32> = loss_function.backward(&true_labels, &output);
+    println!("loss_grad: {:?}", loss_grad);
+
+    // モデルを backward する（勾配を計算して保存しただけ）
+    model.backward(&loss_grad);
 }
