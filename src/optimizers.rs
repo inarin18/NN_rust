@@ -1,2 +1,2 @@
-mod base_optimizer;
-mod sgd;
+pub mod base_optimizer;
+pub mod sgd;
