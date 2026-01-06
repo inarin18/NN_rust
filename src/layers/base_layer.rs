@@ -6,6 +6,10 @@ pub trait AbstractLayerTrait {
     fn o_size(&self) -> usize;
     fn w(&self) -> &Vec<f32>;
     fn b(&self) -> &Vec<f32>;
+    fn grad_w(&self) -> &Vec<f32>;
+    fn grad_b(&self) -> &Vec<f32>;
+    fn update_weights(&mut self, delta_w: &[f32]);
+    fn update_biases(&mut self, delta_b: &[f32]);
     fn activation_type(&self) -> &str;
     fn build(&mut self);
 }

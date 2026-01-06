@@ -136,6 +136,26 @@ impl AbstractLayerTrait for FcLayer {
     fn b(&self) -> &Vec<f32> {
         &self.base.b
     }
+    
+    fn grad_w(&self) -> &Vec<f32> {
+        &self.base.grad_w
+    }
+
+    fn grad_b(&self) -> &Vec<f32> {
+        &self.base.grad_b
+    }
+
+    fn update_weights(&mut self, delta_w: &[f32]) {
+        for i in 0..self.base.w.len() {
+            self.base.w[i] += delta_w[i];
+        }
+    }
+
+    fn update_biases(&mut self, delta_b: &[f32]) {
+        for i in 0..self.base.b.len() {
+            self.base.b[i] += delta_b[i];
+        }
+    }
 
     fn activation_type(&self) -> &str {
         &self.base.activation_type
