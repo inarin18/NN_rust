@@ -2,6 +2,8 @@ use crate::model::Model;
 use crate::optimizers::base_optimizer::AbstractOptimizerTrait;
 use crate::losses::base_loss::AbstractLossFunctionTrait;
 use crate::data::DataSet;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 pub struct Trainer<O, L>
 where
@@ -45,11 +47,6 @@ impl<O, L> Trainer<O, L> where
         let num_features = self.train_dataset.num_features;
 
         let train_num_samples = self.train_dataset.num_samples;
-        let train_images = &self.train_dataset.images.chunks(num_features).collect::<Vec<&[f32]>>();
-        let train_labels = &self.train_dataset.labels;
-
-        // let test_images = &self.test_dataset.images;
-        // let test_labels = &self.test_dataset.labels;
 
         let batch_size = self.batch_size.max(1);
         let num_batches = (train_num_samples + batch_size - 1) / batch_size;
@@ -60,6 +57,9 @@ impl<O, L> Trainer<O, L> where
                 println!("Epoch {}/{}", epoch + 1, self.epoch);
                 println!("{}", "=".repeat(60));
             }
+
+            let mut indices: Vec<usize> = (0..train_num_samples).collect();
+            indices.shuffle(&mut thread_rng());
 
             for batch_idx in 0..num_batches {
                 let start = batch_idx * batch_size;
@@ -79,10 +79,13 @@ impl<O, L> Trainer<O, L> where
                 let mut last_label: Vec<f32> = Vec::new();
 
                 for i in start..end {
+                    let sample_idx = indices[i];
                     // prepare input and label
-                    let input = train_images[i].to_vec();
+                    let input_start = sample_idx * num_features;
+                    let input_end = input_start + num_features;
+                    let input = self.train_dataset.images[input_start..input_end].to_vec();
                     let mut label = vec![0.0; output_size];
-                    label[train_labels[i] as usize] = 1.0;
+                    label[self.train_dataset.labels[sample_idx] as usize] = 1.0;
 
                     // forward
                     let output = self.model.forward(&input);
@@ -134,6 +137,11 @@ impl<O, L> Trainer<O, L> where
                 }
             }
 
+            let accuracy = self.evaluate_accuracy();
+            if self.verbose {
+                println!("Validation accuracy: {:.2}%", accuracy);
+            }
+
             if self.verbose {
                 println!("\n{}", "-".repeat(60));
             }
@@ -158,5 +166,26 @@ impl<O, L> Trainer<O, L> where
         println!("  True class: {}, Predicted class: {}", true_class, predicted_class);
         println!("  Output probabilities: {:?}", 
             output.iter().map(|&x| format!("{:.4}", x)).collect::<Vec<_>>());
+    }
+
+    fn evaluate_accuracy(&mut self) -> f32 {
+        let mut correct = 0usize;
+        let total = self.test_dataset.num_samples.max(1);
+        for idx in 0..self.test_dataset.num_samples {
+            let input_start = idx * self.test_dataset.num_features;
+            let input_end = input_start + self.test_dataset.num_features;
+            let input = self.test_dataset.images[input_start..input_end].to_vec();
+            let label = self.test_dataset.labels[idx];
+            let output = self.model.forward(&input);
+            let predicted_class = output.iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .map(|(idx, _)| idx)
+                .unwrap();
+            if predicted_class == label as usize {
+                correct += 1;
+            }
+        }
+        (correct as f32 / total as f32) * 100.0
     }
 }

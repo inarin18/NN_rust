@@ -102,7 +102,7 @@ fn main() {
     println!("weight difference: {:?}", weight_diff);
 
     // Trainer を作成
-    let (train_dataset, test_dataset) = mnist_data.split_dataset(0.01);
+    let (train_dataset, test_dataset) = mnist_data.split_dataset(0.9);
     let mut trainer: Trainer<Sgd, CrossEntropyLoss> = Trainer::new(
         model,
         optimizer,
