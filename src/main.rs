@@ -110,6 +110,7 @@ fn main() {
         train_dataset,
         test_dataset,
         10,
+        32,
         true
     );
     trainer.run();

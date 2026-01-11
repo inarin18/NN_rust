@@ -15,7 +15,7 @@ where
     pub test_dataset: DataSet,
     // pub device: Device,
     pub epoch: usize,
-    // pub batch_size: usize,
+    pub batch_size: usize,
     pub verbose: bool,
     // pub callbacks: Vec<Box<dyn Callback>>,
     // pub metrics: Vec<Box<dyn Metric>>,
@@ -33,9 +33,10 @@ impl<O, L> Trainer<O, L> where
         train_dataset: DataSet, 
         test_dataset: DataSet, 
         epoch: usize, 
+        batch_size: usize,
         verbose: bool
     ) -> Self {
-        Self { model, optimizer, loss_function, train_dataset, test_dataset, epoch, verbose }
+        Self { model, optimizer, loss_function, train_dataset, test_dataset, epoch, batch_size, verbose }
     }
 
     pub fn run(&mut self) {
@@ -50,6 +51,9 @@ impl<O, L> Trainer<O, L> where
         // let test_images = &self.test_dataset.images;
         // let test_labels = &self.test_dataset.labels;
 
+        let batch_size = self.batch_size.max(1);
+        let num_batches = (train_num_samples + batch_size - 1) / batch_size;
+
         for epoch in 0..self.epoch {
             if self.verbose {
                 println!("\n{}", "=".repeat(60));
@@ -57,30 +61,77 @@ impl<O, L> Trainer<O, L> where
                 println!("{}", "=".repeat(60));
             }
 
-            for i in 0..train_num_samples {
+            for batch_idx in 0..num_batches {
+                let start = batch_idx * batch_size;
+                let end = (start + batch_size).min(train_num_samples);
+                let current_batch_size = end - start;
 
-                // prepare input and label
-                let input = train_images[i].to_vec();
-                let mut label = vec![0.0; output_size];
-                label[train_labels[i] as usize] = 1.0;
+                let mut batch_grad_w: Vec<Vec<f32>> = self.model.layers
+                    .iter()
+                    .map(|layer| vec![0.0; layer.w().len()])
+                    .collect();
+                let mut batch_grad_b: Vec<Vec<f32>> = self.model.layers
+                    .iter()
+                    .map(|layer| vec![0.0; layer.b().len()])
+                    .collect();
+                let mut loss_sum: f32 = 0.0;
+                let mut last_output: Vec<f32> = Vec::new();
+                let mut last_label: Vec<f32> = Vec::new();
 
-                // forward
-                let output = self.model.forward(&input);
+                for i in start..end {
+                    // prepare input and label
+                    let input = train_images[i].to_vec();
+                    let mut label = vec![0.0; output_size];
+                    label[train_labels[i] as usize] = 1.0;
 
-                // calculate loss
-                let loss = self.loss_function.forward(&label, &output);
+                    // forward
+                    let output = self.model.forward(&input);
 
-                // verbose output
-                if self.verbose && i % 100 == 0 {
-                    self.verbose_output(epoch, i, train_num_samples, loss, &output, &label);
+                    // calculate loss
+                    let loss = self.loss_function.forward(&label, &output);
+                    loss_sum += loss;
+                    last_output = output.clone();
+                    last_label = label.clone();
+
+                    // backward
+                    let loss_grad = self.loss_function.backward(&label, &output);
+                    self.model.backward(&loss_grad);
+
+                    // accumulate gradients
+                    for (layer_idx, layer) in self.model.layers.iter().enumerate() {
+                        for j in 0..layer.grad_w().len() {
+                            batch_grad_w[layer_idx][j] += layer.grad_w()[j];
+                        }
+                        for j in 0..layer.grad_b().len() {
+                            batch_grad_b[layer_idx][j] += layer.grad_b()[j];
+                        }
+                    }
                 }
 
-                // backward
-                let loss_grad = self.loss_function.backward(&label, &output);
-                self.model.backward(&loss_grad);
+                let scale = 1.0 / current_batch_size as f32;
+                for (layer_idx, layer) in self.model.layers.iter_mut().enumerate() {
+                    {
+                        let grad_w = layer.grad_w_mut();
+                        for j in 0..grad_w.len() {
+                            grad_w[j] = batch_grad_w[layer_idx][j] * scale;
+                        }
+                    }
+                    {
+                        let grad_b = layer.grad_b_mut();
+                        for j in 0..grad_b.len() {
+                            grad_b[j] = batch_grad_b[layer_idx][j] * scale;
+                        }
+                    }
+                }
 
                 // update
                 self.optimizer.update(&mut self.model);
+
+                // verbose output
+                if self.verbose && batch_idx % 10 == 0 {
+                    let avg_loss = loss_sum / current_batch_size as f32;
+                    self.verbose_output(epoch, batch_idx, num_batches, avg_loss, &last_output, &last_label);
+                }
             }
 
             if self.verbose {
@@ -89,9 +140,9 @@ impl<O, L> Trainer<O, L> where
         }
     }
 
-    fn verbose_output(&self, epoch: usize, i: usize, train_num_samples: usize, loss: f32, output: &[f32], label: &[f32]) {
-        let progress = (i as f32 / train_num_samples as f32) * 100.0;
-        println!("\n[Step {}/{} ({:.1}%)]", i + 1, train_num_samples, progress);
+    fn verbose_output(&self, _epoch: usize, i: usize, num_steps: usize, loss: f32, output: &[f32], label: &[f32]) {
+        let progress = (i as f32 / num_steps as f32) * 100.0;
+        println!("\n[Step {}/{} ({:.1}%)]", i + 1, num_steps, progress);
         println!("  Loss: {:.6}", loss);
         
         // Find predicted class

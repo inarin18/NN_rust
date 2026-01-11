@@ -145,6 +145,14 @@ impl AbstractLayerTrait for FcLayer {
         &self.base.grad_b
     }
 
+    fn grad_w_mut(&mut self) -> &mut Vec<f32> {
+        &mut self.base.grad_w
+    }
+
+    fn grad_b_mut(&mut self) -> &mut Vec<f32> {
+        &mut self.base.grad_b
+    }
+
     fn update_weights(&mut self, delta_w: &[f32]) {
         for i in 0..self.base.w.len() {
             self.base.w[i] += delta_w[i];
