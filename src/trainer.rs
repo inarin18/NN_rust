@@ -19,6 +19,8 @@ where
     pub epoch: usize,
     pub batch_size: usize,
     pub verbose: bool,
+    pub eval_limit: Option<usize>,
+    pub train_limit: Option<usize>,
     // pub callbacks: Vec<Box<dyn Callback>>,
     // pub metrics: Vec<Box<dyn Metric>>,
     // pub visualization: bool,
@@ -36,9 +38,23 @@ impl<O, L> Trainer<O, L> where
         test_dataset: DataSet, 
         epoch: usize, 
         batch_size: usize,
-        verbose: bool
+        verbose: bool,
+        debug: bool
     ) -> Self {
-        Self { model, optimizer, loss_function, train_dataset, test_dataset, epoch, batch_size, verbose }
+        let eval_limit = if debug { Some(1000) } else { None };
+        let train_limit = if debug { Some(100) } else { None };
+        Self {
+            model,
+            optimizer,
+            loss_function,
+            train_dataset,
+            test_dataset,
+            epoch,
+            batch_size,
+            verbose,
+            eval_limit,
+            train_limit,
+        }
     }
 
     pub fn run(&mut self) {
@@ -46,7 +62,9 @@ impl<O, L> Trainer<O, L> where
         let output_size = self.model.layers.last().unwrap().o_size();
         let num_features = self.train_dataset.num_features;
 
-        let train_num_samples = self.train_dataset.num_samples;
+        let train_num_samples = self.train_limit
+            .unwrap_or(self.train_dataset.num_samples)
+            .min(self.train_dataset.num_samples);
 
         let batch_size = self.batch_size.max(1);
         let num_batches = (train_num_samples + batch_size - 1) / batch_size;
@@ -170,8 +188,8 @@ impl<O, L> Trainer<O, L> where
 
     fn evaluate_accuracy(&mut self) -> f32 {
         let mut correct = 0usize;
-        let total = self.test_dataset.num_samples.max(1);
-        for idx in 0..self.test_dataset.num_samples {
+        let eval_samples = self.eval_limit.unwrap_or(self.test_dataset.num_samples).min(self.test_dataset.num_samples);
+        for idx in 0..eval_samples {
             let input_start = idx * self.test_dataset.num_features;
             let input_end = input_start + self.test_dataset.num_features;
             let input = self.test_dataset.images[input_start..input_end].to_vec();
@@ -186,6 +204,7 @@ impl<O, L> Trainer<O, L> where
                 correct += 1;
             }
         }
-        (correct as f32 / total as f32) * 100.0
+        let denom = if eval_samples == 0 { 1 } else { eval_samples };
+        (correct as f32 / denom as f32) * 100.0
     }
 }
